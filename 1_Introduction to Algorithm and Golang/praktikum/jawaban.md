@@ -79,7 +79,7 @@ Referensi
 ---
 ### 3
 
-Flowchart ada di folder screenshots
+Flowchart ada di folder screenshoots
 
 
 
