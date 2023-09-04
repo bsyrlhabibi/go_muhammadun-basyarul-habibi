@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
+// mengatasi masalah race condition
 func main() {
-	// mengatasi masalah race condition
 	x := 0
 	var mutex sync.Mutex
 
