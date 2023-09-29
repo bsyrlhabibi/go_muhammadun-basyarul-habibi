@@ -93,11 +93,19 @@ func UpdateBookController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	book.Title = newBook.Title
-	book.Author = newBook.Author
-	book.Publisher = newBook.Publisher
+	updates := make(map[string]interface{})
 
-	if err := configs.DB.Save(&book).Error; err != nil {
+	if newBook.Title != "" {
+		updates["title"] = newBook.Title
+	}
+	if newBook.Author != "" {
+		updates["author"] = newBook.Author
+	}
+	if newBook.Publisher != "" {
+		updates["publisher"] = newBook.Publisher
+	}
+
+	if err := configs.DB.Model(&book).Updates(updates).Error; err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 

@@ -14,7 +14,7 @@ import (
 func GetUsersController(c echo.Context) error {
 	var users []models.User
 
-	if err := configs.DB.Find(&users).Error; err != nil {
+	if err := configs.DB.Preload("Blogs").Find(&users).Error; err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -32,7 +32,7 @@ func GetUserController(c echo.Context) error {
 	}
 
 	var user models.User
-	if err := configs.DB.First(&user, userID).Error; err != nil {
+	if err := configs.DB.Preload("Blogs").First(&user, userID).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "User not found")
 	}
 
@@ -96,11 +96,19 @@ func UpdateUserController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	user.Name = newUser.Name
-	user.Email = newUser.Email
-	user.Password = newUser.Password
+	updates := make(map[string]interface{})
 
-	if err := configs.DB.Save(&user).Error; err != nil {
+	if newUser.Name != "" {
+		updates["name"] = newUser.Name
+	}
+	if newUser.Email != "" {
+		updates["email"] = newUser.Email
+	}
+	if newUser.Password != "" {
+		updates["password"] = newUser.Password
+	}
+
+	if err := configs.DB.Model(&user).Updates(updates).Error; err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
