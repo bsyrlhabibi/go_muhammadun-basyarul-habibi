@@ -45,7 +45,7 @@ func GetBlogController(c echo.Context) error {
 	}
 
 	var blog models.Blog
-	if err := configs.DB.Preload("User").First(&blog, blogID).Error; err != nil {
+	if err := configs.DB.First(&blog, blogID).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Blog not found")
 	}
 
