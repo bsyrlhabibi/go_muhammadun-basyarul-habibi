@@ -133,7 +133,6 @@ func DeleteUserController(c echo.Context) error {
 
 // update user by id
 func UpdateUserController(c echo.Context) error {
-	// your solution here
 	userID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
@@ -149,11 +148,19 @@ func UpdateUserController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	user.Name = newUser.Name
-	user.Email = newUser.Email
-	user.Password = newUser.Password
+	updates := make(map[string]interface{})
 
-	if err := DB.Save(&user).Error; err != nil {
+	if newUser.Name != "" {
+		updates["name"] = newUser.Name
+	}
+	if newUser.Email != "" {
+		updates["email"] = newUser.Email
+	}
+	if newUser.Password != "" {
+		updates["password"] = newUser.Password
+	}
+
+	if err := DB.Model(&user).Updates(updates).Error; err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
