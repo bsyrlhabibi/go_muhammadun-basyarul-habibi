@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>controllers: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">restful-api/controllers/blogs.go (72.7%)</option>
+				
+				<option value="file1">restful-api/controllers/books.go (88.6%)</option>
+				
+				<option value="file2">restful-api/controllers/users.go (87.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package controllers
+
+import (
+        "net/http"
+        "strconv"
+
+        "restful-api/configs"
+        "restful-api/models"
+
+        "github.com/labstack/echo/v4"
+)
+
+// create new blog
+func CreateBlogController(c echo.Context) error <span class="cov8" title="1">{
+
+        blog := models.Blog{}
+        c.Bind(&amp;blog)
+
+        if err := configs.DB.Save(&amp;blog).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success create new blog",
+                "blog":    blog,
+        })</span>
+}
+
+// get all blogs
+func GetBlogsController(c echo.Context) error <span class="cov8" title="1">{
+        var blogs []models.Blog
+
+        if err := configs.DB.Find(&amp;blogs).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get all blogs",
+                "blogs":   blogs,
+        })</span>
+}
+
+// get blog by id
+func GetBlogController(c echo.Context) error <span class="cov8" title="1">{
+        blogID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid blog ID")
+        }</span>
+
+        <span class="cov8" title="1">var blog models.Blog
+        if err := configs.DB.First(&amp;blog, blogID).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusNotFound, "Blog not found")
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get blog by ID",
+                "blog":    blog,
+        })</span>
+}
+
+// update blog by id
+func UpdateBlogController(c echo.Context) error <span class="cov8" title="1">{
+        blogID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid blog ID")
+        }</span>
+
+        <span class="cov8" title="1">var blog models.Blog
+        if err := configs.DB.First(&amp;blog, blogID).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusNotFound, "Blog not found")
+        }</span>
+
+        <span class="cov8" title="1">newBlog := new(models.Blog)
+        if err := c.Bind(newBlog); err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">updates := make(map[string]interface{})
+
+        if newBlog.Title != "" </span><span class="cov8" title="1">{
+                updates["Title"] = newBlog.Title
+        }</span>
+
+        <span class="cov8" title="1">if newBlog.Content != "" </span><span class="cov8" title="1">{
+                updates["Content"] = newBlog.Content
+        }</span>
+
+        <span class="cov8" title="1">if newBlog.UserID != 0 </span><span class="cov0" title="0">{
+                updates["UserID"] = newBlog.UserID
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Model(&amp;blog).Updates(updates).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success update blog",
+                "blog":    blog,
+        })</span>
+}
+
+// delete blog by id
+func DeleteBlogController(c echo.Context) error <span class="cov8" title="1">{
+        blogID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid blog ID")
+        }</span>
+
+        <span class="cov8" title="1">var blog models.Blog
+        if err := configs.DB.First(&amp;blog, blogID).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusNotFound, "Blog not found")
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Delete(&amp;blog).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success delete blog",
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package controllers
+
+import (
+        "net/http"
+        "strconv"
+
+        "restful-api/configs"
+        "restful-api/models"
+
+        "github.com/labstack/echo/v4"
+)
+
+// get all books
+func GetBooksController(c echo.Context) error <span class="cov8" title="1">{
+        var books []models.Book
+
+        if err := configs.DB.Find(&amp;books).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get all books",
+                "books":   books,
+        })</span>
+}
+
+// get book by id
+func GetBookController(c echo.Context) error <span class="cov8" title="1">{
+        bookID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid book ID")
+        }</span>
+
+        <span class="cov8" title="1">var book models.Book
+        if err := configs.DB.First(&amp;book, bookID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "Book not found")
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get book by ID",
+                "book":    book,
+        })</span>
+}
+
+// create new book
+func CreateBookController(c echo.Context) error <span class="cov8" title="1">{
+        book := models.Book{}
+        c.Bind(&amp;book)
+
+        if err := configs.DB.Save(&amp;book).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success create new book",
+                "book":    book,
+        })</span>
+}
+
+// delete book by id
+func DeleteBookController(c echo.Context) error <span class="cov8" title="1">{
+        bookID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid book ID")
+        }</span>
+
+        <span class="cov8" title="1">var book models.Book
+        if err := configs.DB.First(&amp;book, bookID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "Book not found")
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Delete(&amp;book).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success delete book",
+        })</span>
+}
+
+// update book by id
+func UpdateBookController(c echo.Context) error <span class="cov8" title="1">{
+        bookID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid book ID")
+        }</span>
+
+        <span class="cov8" title="1">var book models.Book
+        if err := configs.DB.First(&amp;book, bookID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "Book not found")
+        }</span>
+
+        <span class="cov8" title="1">newBook := new(models.Book)
+        if err := c.Bind(newBook); err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">updates := make(map[string]interface{})
+
+        if newBook.Title != "" </span><span class="cov8" title="1">{
+                updates["title"] = newBook.Title
+        }</span>
+        <span class="cov8" title="1">if newBook.Author != "" </span><span class="cov8" title="1">{
+                updates["author"] = newBook.Author
+        }</span>
+        <span class="cov8" title="1">if newBook.Publisher != "" </span><span class="cov8" title="1">{
+                updates["publisher"] = newBook.Publisher
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Model(&amp;book).Updates(updates).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success update book",
+                "book":    book,
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package controllers
+
+import (
+        "net/http"
+        "strconv"
+
+        "restful-api/configs"
+        "restful-api/middleware"
+        "restful-api/models"
+
+        "github.com/labstack/echo/v4"
+)
+
+// get all users
+func GetUsersController(c echo.Context) error <span class="cov8" title="1">{
+        var users []models.User
+
+        if err := configs.DB.Preload("Blogs").Find(&amp;users).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get all users",
+                "users":   users,
+        })</span>
+}
+
+// get user by id
+func GetUserController(c echo.Context) error <span class="cov8" title="1">{
+        // your solution here
+        userID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
+        }</span>
+
+        <span class="cov8" title="1">var user models.User
+        if err := configs.DB.Preload("Blogs").First(&amp;user, userID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "User not found")
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success get user by ID",
+                "user":    user,
+        })</span>
+}
+
+// create new user
+func CreateUserController(c echo.Context) error <span class="cov8" title="1">{
+        user := models.User{}
+        c.Bind(&amp;user)
+
+        if err := configs.DB.Save(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success create new user",
+                "user":    user,
+        })</span>
+}
+
+// delete user by id
+func DeleteUserController(c echo.Context) error <span class="cov8" title="1">{
+        // your solution here
+        userID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
+        }</span>
+
+        <span class="cov8" title="1">var user models.User
+        if err := configs.DB.First(&amp;user, userID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "User not found")
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Delete(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success delete user",
+        })</span>
+}
+
+// update user by id
+func UpdateUserController(c echo.Context) error <span class="cov8" title="1">{
+        // your solution here
+        userID, err := strconv.Atoi(c.Param("id"))
+        if err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
+        }</span>
+
+        <span class="cov8" title="1">var user models.User
+        if err := configs.DB.First(&amp;user, userID).Error; err != nil </span><span class="cov8" title="1">{
+                return echo.NewHTTPError(http.StatusNotFound, "User not found")
+        }</span>
+
+        <span class="cov8" title="1">newUser := new(models.User)
+        if err := c.Bind(newUser); err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">updates := make(map[string]interface{})
+
+        if newUser.Name != "" </span><span class="cov8" title="1">{
+                updates["name"] = newUser.Name
+        }</span>
+        <span class="cov8" title="1">if newUser.Email != "" </span><span class="cov8" title="1">{
+                updates["email"] = newUser.Email
+        }</span>
+        <span class="cov8" title="1">if newUser.Password != "" </span><span class="cov8" title="1">{
+                updates["password"] = newUser.Password
+        }</span>
+
+        <span class="cov8" title="1">if err := configs.DB.Model(&amp;user).Updates(updates).Error; err != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success update user",
+                "user":    user,
+        })</span>
+}
+
+func LoginUserController(c echo.Context) error <span class="cov8" title="1">{
+        user := models.User{}
+        c.Bind(&amp;user)
+
+        err := configs.DB.Where("email = ? AND password = ?", user.Email, user.Password).First(&amp;user).Error
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+                        "message": "fail login",
+                        "error":   err.Error(),
+                })
+        }</span>
+
+        <span class="cov8" title="1">token, err := middleware.CreateToken(int(user.ID), user.Name)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+                        "message": "fail login",
+                        "error":   err.Error(),
+                })
+        }</span>
+
+        <span class="cov8" title="1">userResponse := models.UserResponse{int(user.ID), user.Name, user.Email, token}
+
+        return c.JSON(http.StatusOK, map[string]interface{}{
+                "message": "success create new user",
+                "user":    userResponse,
+        })</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
