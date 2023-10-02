@@ -96,8 +96,8 @@ func TestGetBookById(t *testing.T) {
 	}
 }
 
-// get book by id invalid
-func TestGetBookByIdInvalid(t *testing.T) {
+// get book by id 400
+func TestGetBookByIdBadRequest(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("Invalid Book ID", func(t *testing.T) {
@@ -105,6 +105,23 @@ func TestGetBookByIdInvalid(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/books/invalid_id", nil)
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
+
+		if !assert.Error(t, GetBookController(c)) {
+			t.Errorf("Expected an error, but got nil")
+		}
+	})
+}
+
+// get book by id 404
+func TestGetBookByIdNotFound(t *testing.T) {
+	e := InitEchoTestAPI()
+
+	t.Run("User Not Found", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/books/5", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetParamNames("id")
+		c.SetParamValues("5")
 
 		if !assert.Error(t, GetBookController(c)) {
 			t.Errorf("Expected an error, but got nil")
@@ -180,8 +197,8 @@ func TestDeleteBook(t *testing.T) {
 	}
 }
 
-// delete book invalid
-func TestDeleteBookInvalid(t *testing.T) {
+// delete book 404
+func TestDeleteBookNotFound(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("User Not Found", func(t *testing.T) {
@@ -191,13 +208,29 @@ func TestDeleteBookInvalid(t *testing.T) {
 		c.SetParamNames("id")
 		c.SetParamValues("5")
 
-		if !assert.Error(t, UpdateBookController(c)) {
+		if !assert.Error(t, DeleteBookController(c)) {
 			t.Errorf("Expected an error, but got nil")
 		}
 	})
 }
 
-// update book by id
+// delete book 400
+func TestDeleteBooksBadRequest(t *testing.T) {
+	e := InitEchoTestAPI()
+
+	t.Run("Invalid Book ID", func(t *testing.T) {
+		// Menggunakan ID yang tidak valid
+		req := httptest.NewRequest(http.MethodGet, "/books/invalid_id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		if !assert.Error(t, DeleteBookController(c)) {
+			t.Errorf("Expected an error, but got nil")
+		}
+	})
+}
+
+// update book
 func TestUpdateBook(t *testing.T) {
 	var testCases = []struct {
 		name       string
@@ -229,8 +262,8 @@ func TestUpdateBook(t *testing.T) {
 	}
 }
 
-// update book invalid
-func TestUpdateBookInvalid(t *testing.T) {
+// update book 404
+func TestUpdateBookNotFound(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("Book Not Found", func(t *testing.T) {
@@ -239,6 +272,22 @@ func TestUpdateBookInvalid(t *testing.T) {
 		c := e.NewContext(req, rec)
 		c.SetParamNames("id")
 		c.SetParamValues("5")
+
+		if !assert.Error(t, UpdateBookController(c)) {
+			t.Errorf("Expected an error, but got nil")
+		}
+	})
+}
+
+// uodate book 400
+func TestUpdateBookBadRequest(t *testing.T) {
+	e := InitEchoTestAPI()
+
+	t.Run("Invalid Book ID", func(t *testing.T) {
+		// Menggunakan ID yang tidak valid
+		req := httptest.NewRequest(http.MethodGet, "/books/invalid_id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
 
 		if !assert.Error(t, UpdateBookController(c)) {
 			t.Errorf("Expected an error, but got nil")

@@ -102,8 +102,8 @@ func TestGetUserById(t *testing.T) {
 	}
 }
 
-// get user by id invalid
-func TestGetUserByIdInvalid(t *testing.T) {
+// get user by id 400
+func TestGetUserByIdBadRequest(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("Invalid User ID", func(t *testing.T) {
@@ -112,7 +112,24 @@ func TestGetUserByIdInvalid(t *testing.T) {
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
-		if !assert.Error(t, UpdateUserController(c)) {
+		if !assert.Error(t, GetUserController(c)) {
+			t.Errorf("Expected an error, but got nil")
+		}
+	})
+}
+
+// get user by id 404
+func TestGetUserByIdNotFound(t *testing.T) {
+	e := InitEchoTestAPI()
+
+	t.Run("User Not Found", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/users/5", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetParamNames("id")
+		c.SetParamValues("5")
+
+		if !assert.Error(t, GetUserController(c)) {
 			t.Errorf("Expected an error, but got nil")
 		}
 	})
@@ -186,8 +203,24 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
-// delete user invalid
-func TestDeleteUserInvalid(t *testing.T) {
+// delete user 400
+func TestDeleteUserBadRequest(t *testing.T) {
+	e := InitEchoTestAPI()
+
+	t.Run("Invalid User ID", func(t *testing.T) {
+		// Menggunakan ID yang tidak valid
+		req := httptest.NewRequest(http.MethodGet, "/users/invalid_id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		if !assert.Error(t, DeleteUserController(c)) {
+			t.Errorf("Expected an error, but got nil")
+		}
+	})
+}
+
+// delete user 404
+func TestDeleteUserNotFound(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("User Not Found", func(t *testing.T) {
@@ -197,7 +230,7 @@ func TestDeleteUserInvalid(t *testing.T) {
 		c.SetParamNames("id")
 		c.SetParamValues("5")
 
-		if !assert.Error(t, UpdateUserController(c)) {
+		if !assert.Error(t, DeleteUserController(c)) {
 			t.Errorf("Expected an error, but got nil")
 		}
 	})
@@ -235,8 +268,8 @@ func TestUpdateUser(t *testing.T) {
 	}
 }
 
-// update user invalid
-func TestUpdateUserInvalid(t *testing.T) {
+// update user 404
+func TestUpdateUserNotFound(t *testing.T) {
 	e := InitEchoTestAPI()
 
 	t.Run("User Not Found", func(t *testing.T) {
@@ -250,4 +283,69 @@ func TestUpdateUserInvalid(t *testing.T) {
 			t.Errorf("Expected an error, but got nil")
 		}
 	})
+}
+
+// login user
+func TestLoginUserController(t *testing.T) {
+	configs.InitDBTest()
+	e := echo.New()
+
+	InsertDataUserForGetUsers()
+	loginJSON := `{
+		"email": "mamat@gmail.com",
+		"password": "mamat"
+	}`
+
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(loginJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := LoginUserController(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal(rec.Body.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "success create new user", response["message"])
+	assert.Contains(t, response, "user")
+
+	userData := response["user"].(map[string]interface{})
+	assert.Equal(t, "mamat", userData["name"])
+	assert.Equal(t, "mamat@gmail.com", userData["email"])
+	assert.Contains(t, userData, "token")
+}
+
+// fail login user
+func TestLoginUserErrorHandling(t *testing.T) {
+	configs.InitDBTest()
+	e := echo.New()
+
+	// Simulasikan kesalahan selama proses login
+	loginJSON := `{
+        "email": "email-tidak-valid",
+        "password": "kata-sandi-salah"
+    }`
+
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(loginJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := LoginUserController(c)
+
+	assert.NoError(t, err)
+
+	// Periksa bahwa respons memiliki status HTTP 500 dan pesan error yang sesuai
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal(rec.Body.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "fail login", response["message"])
+	assert.Contains(t, response, "error")
 }
