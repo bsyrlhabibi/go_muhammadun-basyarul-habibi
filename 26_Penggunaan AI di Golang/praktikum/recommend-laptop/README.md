@@ -1,1 +1,3 @@
+```
 KEY=<your-api-key-here>
+```
