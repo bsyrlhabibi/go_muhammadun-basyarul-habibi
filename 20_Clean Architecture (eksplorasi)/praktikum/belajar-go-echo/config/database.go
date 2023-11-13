@@ -1,7 +1,7 @@
 package config
 
 import (
-	"belajar-go-echo/features/users/data"
+	models "belajar-go-echo/module/entities"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -19,6 +19,6 @@ func ConnectDB() {
 }
 
 func MigrateDB() {
-	DB.Migrator().DropTable(&data.User{})
-	DB.AutoMigrate(&data.User{})
+	DB.Migrator().DropTable(&models.User{})
+	DB.AutoMigrate(&models.User{})
 }
